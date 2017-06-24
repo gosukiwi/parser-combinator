@@ -1,18 +1,6 @@
 require "minitest/autorun"
 require "pry"
-require_relative "../lib/grammar"
-
-def assert_parses(parser, with:, remaining:)
-  result = parser.run(with)
-  assert_equal true,      result.success
-  assert_equal remaining, result.remaining
-end
-
-def assert_doesnt_parse(parser, with:, remaining:)
-  result = parser.run(with)
-  assert_equal false,     result.success
-  assert_equal remaining, result.remaining
-end
+require_relative "spec_helpers"
 
 describe Grammar do
   describe "Built-in combinators" do
@@ -120,6 +108,31 @@ describe Grammar do
       assert_parses parser, with: "n", remaining: ""
       assert_parses parser, with: "6", remaining: ""
       assert_parses parser, with: "",  remaining: ""
+    end
+  end
+
+  describe "logical AND" do
+    it "works with a single branch" do
+      parser = Grammar.build do
+        rule(:letter)          { many1 { anyLetter } }
+        rule(:number)          { many0 { anyNumber } }
+        rule(:letterAndNumber) { rule(:letter) >> rule(:number) }
+        start(:letterAndNumber)
+      end
+
+      assert_parses parser, with: "foo123", remaining: ""
+    end
+
+    it "works with multiple branches" do
+      parser = Grammar.build do
+        rule(:letter) { many1 { anyLetter } }
+        rule(:number) { many0 { anyNumber } }
+        rule(:foo)    { rule(:letter) >> rule(:number) >> rule(:letter) }
+        start(:foo)
+      end
+
+      assert_parses       parser, with: "foo123asd", remaining: ""
+      assert_doesnt_parse parser, with: "foo123",    remaining: "foo123"
     end
   end
 
