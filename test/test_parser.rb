@@ -81,7 +81,7 @@ describe Parser do
       rule(:letterOrNumber) { seq rule(:letter), rule(:number), lambda { |letter, number| [letter, number] } }
       start(:letterOrNumber)
     end
-    
-    assert_equal [ParserResult.new(true, "8"), ParserResult.new(true, "")], parser.call("w8")
+
+    assert_equal ["w", "8"], parser.call("w8")
   end
 end
