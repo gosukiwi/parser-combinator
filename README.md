@@ -13,13 +13,13 @@ In a Ruby, using a DSL
 
     # `match:and` matches the first argument, and then the second. If any
     # of them fails, it fails.
-    nameAndEquals = match name and: equals
+    nameAndEquals = match first: name andThen: equals
 
     # `match:or`
-    nameOrEquals = match name or: equals
+    nameOrEquals = match first: name orElse: equals
 
     # `match:between`
-    betweenQuotes = match name between: (one '"') and: (one '"')
+    betweenQuotes = match first: name between: (one '"') and: (one '"')
 
     # `seq` matches many parsers, and passes the result to a lambda
     assign = seq name equals name { |name _ value| Assign.new(lhs: name, rhs: value) }

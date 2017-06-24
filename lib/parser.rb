@@ -1,35 +1,22 @@
+require_relative "combinators"
+
 class Parser
   class << self
+    include Combinators
+
     def build(&block)
       @rules = {}
       result = instance_eval &block
       result.call
     end
 
-    def rule(name, &block)
-      @rules[name.to_sym] = block
+    def rule(name, &parser)
+      return @rules.fetch(name.to_sym) { raise "Invalid rule: #{name}"} if parser.nil?
+      @rules[name.to_sym] = parser
     end
 
     def start(name)
       @rules[name]
-    end
-
-    def one(char)
-      lambda do |input|
-        input[0] == char
-      end
-    end
-
-    def anyLetter
-      lambda do |input|
-        test regex: /^[a-zA-Z]/, with: input
-      end
-    end
-
-    private
-
-    def test(regex:, with:)
-      !regex.match(with).nil?
     end
   end
 end
