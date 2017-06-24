@@ -11,15 +11,8 @@ In a Ruby, using a DSL
     # `one` matches a single char
     equals = one '='
 
-    # `match:and` matches the first argument, and then the second. If any
-    # of them fails, it fails.
-    nameAndEquals = match first: name andThen: equals
-
-    # `match:or`
-    nameOrEquals = match first: name orElse: equals
-
     # `match:between`
-    betweenQuotes = match first: name between: (one '"') and: (one '"')
+    betweenQuotes = match name between: (one '"') and: (one '"')
 
     # `seq` matches many parsers, and passes the result to a lambda
     assign = seq name, equals, name, lambda { |name, _ , value| Assign.new(lhs: name, rhs: value) }

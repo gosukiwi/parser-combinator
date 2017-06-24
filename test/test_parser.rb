@@ -26,7 +26,7 @@ describe Grammar do
 
   it "can make rules by hand" do
     parser = Grammar.build do
-      rule(:foo) { Parser.new { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
+      rule(:foo) { Parser.new { |input| input == "foo" ? ok(matched: "foo", remaining: "") : fail(input) } }
       start(:foo)
     end
 
@@ -35,7 +35,7 @@ describe Grammar do
 
   it "matching rules by hand is the same as satisfy" do
     parser = Grammar.build do
-      rule(:foo) { satisfy { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
+      rule(:foo) { satisfy { |input| input == "foo" ? ok(matched: "foo", remaining: "") : fail(input) } }
       start(:foo)
     end
 
@@ -108,6 +108,17 @@ describe Grammar do
       assert_parses parser, with: "n", remaining: ""
       assert_parses parser, with: "6", remaining: ""
       assert_parses parser, with: "",  remaining: ""
+    end
+
+    it "works with satisfy" do
+      parser = Grammar.build do
+        rule(:letter)    { many1 { anyLetter } }
+        rule(:letterOr1) { rule(:letter) | (satisfy { |input| input == "1" ? ok(matched: "1", remaining: "") : fail(input) }) }
+        start(:letterOr1)
+      end
+
+      assert_parses parser, with: "n", remaining: ""
+      assert_parses parser, with: "1", remaining: ""
     end
   end
 

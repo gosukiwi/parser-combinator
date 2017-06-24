@@ -19,5 +19,14 @@ class Grammar
     def start(name)
       @rules[name]
     end
+
+    # Some aliases
+    def ok(*args)
+      ParserResult.ok(*args)
+    end
+
+    def fail(*args)
+      ParserResult.fail(*args)
+    end
   end
 end
