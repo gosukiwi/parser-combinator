@@ -1,4 +1,8 @@
+require_relative "combinators"
+
 class Parser
+  include Combinators
+  
   attr_reader :parser
   def initialize(&block)
     raise "Invalid argument, must provide a block" unless block_given?
@@ -7,40 +11,5 @@ class Parser
 
   def run(input)
     parser.call(input)
-  end
-
-  # Logical OR.
-  # Usage:
-  #   myParser | otherParser
-  #
-  def |(other)
-    Parser.new do |input|
-      first = run(input)
-      if first.ok?
-        first
-      else
-        other.run(input)
-      end
-    end
-  end
-
-  # Logical AND.
-  # Usage:
-  #   myParser >> otherParser
-  #
-  def >>(other)
-    Parser.new do |input|
-      first = run(input)
-      if first.ok?
-        second = other.run(first.remaining)
-        if second.ok?
-          second
-        else
-          ParserResult.fail(input)
-        end
-      else
-        first
-      end
-    end
   end
 end
