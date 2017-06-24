@@ -25,6 +25,9 @@ class Parser
   end
 
   # Logical AND.
+  # Usage:
+  #   myParser >> otherParser
+  #
   def >>(other)
     Parser.new do |input|
       first = run(input)

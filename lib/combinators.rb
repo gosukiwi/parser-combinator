@@ -97,6 +97,37 @@ module Combinators
     end
   end
 
+  # Match something in between some other parsers.
+  # Usage:
+  #   Grammar.build do
+  #     rule(:quote) { one '"' }
+  #     rule(:foo)   { match (many1 { anyLetter }), between: [rule(:quote), rule(:quote)] }
+  #   end
+  #
+  # The grammar above will match 1+ letters between quotes, eg: "foo", "f", "HelloWorld".
+  #
+  def match(rule, between:)
+    first, last = between
+    Parser.new do |input|
+      lhs = first.run(input)
+      if lhs.ok?
+        middle = rule.run(lhs.remaining)
+        if middle.ok?
+          rhs = last.run(middle.remaining)
+          if rhs.ok?
+            rhs
+          else
+            ParserResult.fail(input)
+          end
+        else
+          ParserResult.fail(input)
+        end
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
+
   private
 
   # Test against a simple regex, no groups. It would be possible to pass a callback

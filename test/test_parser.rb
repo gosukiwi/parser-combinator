@@ -186,4 +186,13 @@ describe Grammar do
 
     assert_parses parser, with: "foo", remaining: ""
   end
+
+  it "matches between" do
+    parser = Grammar.build do
+      rule(:quote) { one '"' }
+      rule(:foo)   { match (many1 { anyLetter }), between: [rule(:quote), rule(:quote)] }
+    end
+
+    assert_parses parser, with: '"hi"', remaining: ''
+  end
 end
