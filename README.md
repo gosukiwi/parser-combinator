@@ -1,25 +1,35 @@
 # Parser Combinator
-In a Ruby, using a DSL
+This library provides a DSL which you can use to easily generate parsers in
+Ruby.
 
-    # `many` takes a lambda, matches that multiple times
-    many { [1, 2, 3] } # => <a lambda>
+At it's core, it's a parser combinator library, but you don't need to worry
+about that. You build more complex expression based on simple ones, and match
+any formal language you want.
 
-    # `many1`, one or more
-    # `many0`, zero or more
-    name = many0 { any { ['a'..'z'] } } # => <a lambda>
+Here's an example:
 
-    # `one` matches a single char
-    equals = one '='
+# Documentation
+The library provides several base `parsers` for you. Those are used to constuct
+bigger, more complex parsers.
 
-    # `match:between`
-    betweenQuotes = match name between: (one '"') and: (one '"')
+The documentation is a WIP, and reflects the actual API as much as possible, the
+real and always updated API lives in the tests, so it's highly recommended
+to check them out. Tests can be found in `test/test_*.rb`.
 
-    # `seq` matches many parsers, and passes the result to a lambda
-    assign = seq name, equals, name, lambda { |name, _ , value| Assign.new(lhs: name, rhs: value) }
+## Nothing
+It simple matches nothing:
 
-    assign "hello123" # => #<ParserResult>
+    parser = Grammar.build do
+      let(:nothing) { nothing }
+      start(:nothing)
+    end
+
+    parser.run("").ok?    # => true
+    parser.run("foo").ok? # => false
 
 # Development
+
+    $ bundle install
 
 ## Parsers
 A parser is an instance of `Parser`, an object with a `run` method which takes
@@ -27,4 +37,4 @@ some input and returns a `ParserResult`.
 
 ## Running tests
 
-    ruby -Ilib:test test/test_parser.rb
+    $ ruby -Ilib:test test/test_parser.rb
