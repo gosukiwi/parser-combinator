@@ -26,6 +26,12 @@ In a Ruby, using a DSL
 
     assign "hello123" # => #<ParserResult>
 
+# Development
+
+## Parsers
+A parser is an instance of `Parser`, an object with a `run` method which takes
+some input and returns a `ParserResult`.
+
 ## Running tests
 
     ruby -Ilib:test test/test_parser.rb

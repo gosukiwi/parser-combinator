@@ -14,8 +14,8 @@ module MatchAndOrBetween
   private
 
   def match_or(first, second, input)
-    f = first.call(input)
+    f = first.run(input)
     return f if f.success
-    second.call(input)
+    second.run(input)
   end
 end

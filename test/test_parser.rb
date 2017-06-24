@@ -3,7 +3,7 @@ require "pry"
 require_relative "../lib/grammar"
 
 def assert_parses(parser, with:, remaining:)
-  result = parser.call(with)
+  result = parser.run(with)
   assert_equal true,      result.success
   assert_equal remaining, result.remaining
 end
@@ -20,7 +20,7 @@ describe Grammar do
 
   it "can make rules by hand" do
     parser = Grammar.build do
-      rule(:foo) { lambda { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
+      rule(:foo) { Parser.new { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
       start(:foo)
     end
 
@@ -98,7 +98,7 @@ describe Grammar do
       start(:letterOrNumber)
     end
 
-    assert_equal ["w", "8"], parser.call("w8")
+    assert_equal ["w", "8"], parser.run("w8")
 
     parser = Grammar.build do
       rule(:letter)         { many1 { anyLetter } }
@@ -106,7 +106,7 @@ describe Grammar do
       start(:letterOrNumber)
     end
 
-    assert_equal ["w", "8"], parser.call("w8")
+    assert_equal ["w", "8"], parser.run("w8")
   end
 
   it "uses regex" do

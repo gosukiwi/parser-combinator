@@ -5,7 +5,7 @@ module Combinators
   include MatchAndOrBetween
 
   def one(char)
-    lambda do |input|
+    Parser.new do |input|
       if input[0] == char
         ParserResult.ok(matched: char, remaining: input[1..-1])
       else
@@ -15,25 +15,25 @@ module Combinators
   end
 
   def anyLetter
-    lambda do |input|
+    Parser.new do |input|
       test regex: /^[a-zA-Z]/, with: input
     end
   end
 
   def anyNumber
-    lambda do |input|
+    Parser.new do |input|
       test regex: /^[0-9]/, with: input
     end
   end
 
   def many1(&wrapper)
-    lambda do |input|
+    Parser.new do |input|
       matched   = ""
       remaining = input
       parser    = wrapper.call
 
       loop do
-        result = parser.call(remaining)
+        result = parser.run(remaining)
         break if remaining.nil? || !result.success
         matched   = matched + result.matched
         remaining = result.remaining
@@ -44,30 +44,33 @@ module Combinators
   end
 
   def many0(&wrapper)
-    lambda do |input|
-      return ParserResult.ok(matched: "", remaining: input) if input.nil? || input == ""
-      many1(&wrapper).call(input)
+    Parser.new do |input|
+      if input.nil? || input == ""
+        ParserResult.ok(matched: "", remaining: input)
+      else
+        many1(&wrapper).run(input)
+      end
     end
   end
 
   def match(options)
-    lambda do |input|
+    Parser.new do |input|
       match_from_options(options, input)
     end
   end
 
   def seq(*args)
-    callback  = args[-1]
-    arguments = args[0..(args.length - 2)]
+    callback = args[-1]
+    parsers  = args[0..(args.length - 2)]
 
-    raise "Seq expects at least a parser and a callback." if callback.nil? || arguments.empty?
+    raise "Seq expects at least a parser and a callback." if callback.nil? || parsers.empty?
 
-    lambda do |input|
+    Parser.new do |input|
       remaining = input
       matched   = ""
-      new_args  = arguments.map do |parser|
-        result = parser.call(remaining)
-        return ParserResult.fail(input) unless result.success
+      new_args  = parsers.map do |parser|
+        result = parser.run(remaining)
+        return ParserResult.fail(input) unless result.ok?
         remaining = result.remaining
         result.matched
       end
@@ -79,13 +82,13 @@ module Combinators
   # This is just an alias of lambda in the DSL. See specs for more on this.
   #
   def satisfy(&predicate)
-    lambda do |input|
+    Parser.new do |input|
       predicate.call(input)
     end
   end
 
   def regex(re)
-    lambda do |input|
+    Parser.new do |input|
       test regex: re, with: input
     end
   end
