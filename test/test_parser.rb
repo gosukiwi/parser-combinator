@@ -1,6 +1,6 @@
 require "minitest/autorun"
 require "pry"
-require_relative "../lib/parser"
+require_relative "../lib/grammar"
 
 def assert_parses(parser, with:, remaining:)
   result = parser.call(with)
@@ -8,9 +8,9 @@ def assert_parses(parser, with:, remaining:)
   assert_equal remaining, result.remaining
 end
 
-describe Parser do
+describe Grammar do
   it "must parse one" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:one) { one "a" }
       start(:one)
     end
@@ -19,7 +19,7 @@ describe Parser do
   end
 
   it "can make rules by hand" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:foo) { lambda { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
       start(:foo)
     end
@@ -28,7 +28,7 @@ describe Parser do
   end
 
   it "matching rules by hand is the same as satisfy" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:foo) { satisfy { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
       start(:foo)
     end
@@ -39,7 +39,7 @@ describe Parser do
   it "matches anyOf"
 
   it "matches anyLetter" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:any) { anyLetter }
       start(:any)
     end
@@ -49,7 +49,7 @@ describe Parser do
   end
 
   it "matches anyNumber" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:any) { anyNumber }
       start(:any)
     end
@@ -59,7 +59,7 @@ describe Parser do
   end
 
   it "matches many1" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:word) { many1 { anyLetter } }
       start(:word)
     end
@@ -68,7 +68,7 @@ describe Parser do
   end
 
   it "matches many0" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:word) { many0 { anyLetter } }
       start(:word)
     end
@@ -78,7 +78,7 @@ describe Parser do
   end
 
   it "matches or" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:letter)         { many1 { anyLetter } }
       rule(:number)         { many0 { anyNumber } }
       rule(:letterOrNumber) { match first: rule(:letter), orElse: rule(:number) }
@@ -91,7 +91,7 @@ describe Parser do
   end
 
   it "matches using seq" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:letter)         { many1 { anyLetter } }
       rule(:number)         { many0 { anyNumber } }
       rule(:letterOrNumber) { seq rule(:letter), rule(:number), lambda { |letter, number| [letter, number] } }
@@ -100,7 +100,7 @@ describe Parser do
 
     assert_equal ["w", "8"], parser.call("w8")
 
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:letter)         { many1 { anyLetter } }
       rule(:letterOrNumber) { seq rule(:letter), anyNumber, lambda { |letter, number| [letter, number] } }
       start(:letterOrNumber)
@@ -110,7 +110,7 @@ describe Parser do
   end
 
   it "uses regex" do
-    parser = Parser.build do
+    parser = Grammar.build do
       rule(:foo) { regex /foo/ }
       start(:foo)
     end
