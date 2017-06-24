@@ -5,7 +5,7 @@ module MatchAndOrBetween
   def match_from_options(options, input)
     first = options.fetch(:first) { raise "Must always provide :first" }
     if options[:orElse]
-      match_or first.call, options[:orElse].call, input
+      match_or first, options[:orElse], input
     else
       raise "Invalid match, expecting :andAlso, :orElse, :between:and."
     end
@@ -14,6 +14,8 @@ module MatchAndOrBetween
   private
 
   def match_or(first, second, input)
-    first.call(input) || second.call(input)
+    f = first.call(input)
+    return f if f.success
+    second.call(input)
   end
 end

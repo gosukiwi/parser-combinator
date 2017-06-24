@@ -11,7 +11,7 @@ class Parser
     end
 
     def rule(name, &parser)
-      return @rules.fetch(name.to_sym) { raise "Invalid rule: #{name}"} if parser.nil?
+      return @rules.fetch(name.to_sym).call { raise "Invalid rule: #{name}"} if parser.nil?
       @rules[name.to_sym] = parser
     end
 
