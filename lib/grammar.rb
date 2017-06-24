@@ -1,6 +1,9 @@
 require_relative "base_parsers"
 require_relative "parser"
 
+# This is the main DSL interface. It builds up grammar rules and sets up the
+# DSL.
+#
 class Grammar
   class << self
     include BaseParsers
@@ -20,7 +23,7 @@ class Grammar
       @rules[name]
     end
 
-    # Some aliases
+    # Aliases for DSL
     def ok(*args)
       ParserResult.ok(*args)
     end
