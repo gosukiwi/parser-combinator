@@ -8,14 +8,32 @@ def assert_parses(parser, with:, remaining:)
   assert_equal remaining, result.remaining
 end
 
+def assert_doesnt_parse(parser, with:, remaining:)
+  result = parser.run(with)
+  assert_equal false,     result.success
+  assert_equal remaining, result.remaining
+end
+
 describe Grammar do
-  it "must parse one" do
-    parser = Grammar.build do
-      rule(:one) { one "a" }
-      start(:one)
+  describe "Built-in combinators" do
+    it "matches nothing" do
+      parser = Grammar.build do
+        rule(:foo) { nothing }
+        start(:foo)
+      end
+
+      assert_parses       parser, with: "",    remaining: ""
+      assert_doesnt_parse parser, with: "asd", remaining: "asd"
     end
 
-    assert_parses parser, with: "abc", remaining: "bc"
+    it "must parse one" do
+      parser = Grammar.build do
+        rule(:one) { one "a" }
+        start(:one)
+      end
+
+      assert_parses parser, with: "abc", remaining: "bc"
+    end
   end
 
   it "can make rules by hand" do
@@ -77,17 +95,32 @@ describe Grammar do
     assert_parses parser, with: "abcde", remaining: ""
   end
 
-  it "matches or" do
-    parser = Grammar.build do
-      rule(:letter)         { many1 { anyLetter } }
-      rule(:number)         { many0 { anyNumber } }
-      rule(:letterOrNumber) { match first: rule(:letter), orElse: rule(:number) }
-      start(:letterOrNumber)
+  describe "logical OR" do
+    it "works with a single branch" do
+      parser = Grammar.build do
+        rule(:letter)         { many1 { anyLetter } }
+        rule(:number)         { many0 { anyNumber } }
+        rule(:letterOrNumber) { rule(:letter) | rule(:number) }
+        start(:letterOrNumber)
+      end
+
+      assert_parses parser, with: "n", remaining: ""
+      assert_parses parser, with: "6", remaining: ""
+      assert_parses parser, with: "",  remaining: ""
     end
 
-    assert_parses parser, with: "n", remaining: ""
-    assert_parses parser, with: "6", remaining: ""
-    assert_parses parser, with: "",  remaining: ""
+    it "works with multiple branches" do
+      parser = Grammar.build do
+        rule(:letter)         { many1 { anyLetter } }
+        rule(:number)         { many1 { anyNumber } }
+        rule(:letterOrNumber) { rule(:letter) | rule(:number) | nothing }
+        start(:letterOrNumber)
+      end
+
+      assert_parses parser, with: "n", remaining: ""
+      assert_parses parser, with: "6", remaining: ""
+      assert_parses parser, with: "",  remaining: ""
+    end
   end
 
   it "matches using seq" do

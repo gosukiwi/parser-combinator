@@ -1,15 +1,22 @@
-require_relative "match_and_or_between"
 require_relative "parser_result"
 
 module Combinators
-  include MatchAndOrBetween
+  def nothing
+    Parser.new do |input|
+      if input == "" || input.nil?
+        ParserResult.ok(matched: "", remaining: input)
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
 
   def one(char)
     Parser.new do |input|
       if input[0] == char
         ParserResult.ok(matched: char, remaining: input[1..-1])
       else
-        ParserResult.fail(remaining: input)
+        ParserResult.fail(input)
       end
     end
   end
@@ -44,18 +51,15 @@ module Combinators
   end
 
   def many0(&wrapper)
+    #Parser.new do |input|
+    #  nothing | many1(&wrapper)
+    #end
     Parser.new do |input|
       if input.nil? || input == ""
         ParserResult.ok(matched: "", remaining: input)
       else
         many1(&wrapper).run(input)
       end
-    end
-  end
-
-  def match(options)
-    Parser.new do |input|
-      match_from_options(options, input)
     end
   end
 
