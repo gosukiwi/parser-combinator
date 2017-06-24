@@ -6,22 +6,23 @@ module Combinators
 
   def one(char)
     lambda do |input|
-      result = input[0] == char
-      ParserResult.from_result(success: result, consumed: 1, input: input, matched: char)
+      if input[0] == char
+        ParserResult.ok(matched: char, remaining: input[1..-1])
+      else
+        ParserResult.fail(remaining: input)
+      end
     end
   end
 
   def anyLetter
     lambda do |input|
-      matched, consumed = test regex: /^[a-zA-Z]/, with: input
-      ParserResult.from_result(success: consumed > 0, consumed: consumed, input: input, matched: matched)
+      test regex: /^[a-zA-Z]/, with: input
     end
   end
 
   def anyNumber
     lambda do |input|
-      matched, consumed = test regex: /^[0-9]/, with: input
-      ParserResult.from_result(success: consumed > 0, consumed: consumed, input: input, matched: matched)
+      test regex: /^[0-9]/, with: input
     end
   end
 
@@ -44,7 +45,7 @@ module Combinators
 
   def many0(&wrapper)
     lambda do |input|
-      return ParserResult.ok("") if input.nil? || input == ""
+      return ParserResult.ok(matched: "", remaining: input) if input.nil? || input == ""
       many1(&wrapper).call(input)
     end
   end
@@ -75,10 +76,28 @@ module Combinators
     end
   end
 
+  # This is just an alias of lambda in the DSL. See specs for more on this.
+  #
+  def satisfy(&predicate)
+    lambda do |input|
+      predicate.call(input)
+    end
+  end
+
+  def regex(re)
+    lambda do |input|
+      test regex: re, with: input
+    end
+  end
+
   private
 
+  # Test against a simple regex, no groups. It would be possible to pass a callback
+  # to the regex, in order to work with groups. #MAYBE #TODO
   def test(regex:, with:)
     match = regex.match(with)
-    match.nil? ? ["", 0] : [match[0], match[0].length]
+    return ParserResult.fail(with) if match.nil?
+    matched = match[0]
+    ParserResult.ok(matched: matched, remaining: with[matched.length..-1])
   end
 end

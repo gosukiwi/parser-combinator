@@ -28,4 +28,4 @@ In a Ruby, using a DSL
 
 ## Running tests
 
-    ruby -Ilib:test test/minitest/test_minitest_test.rb
+    ruby -Ilib:test test/test_parser.rb

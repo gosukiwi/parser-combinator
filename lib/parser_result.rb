@@ -6,17 +6,12 @@ class ParserResult
     @matched   = matched
   end
 
-  def self.ok(matched)
-    ParserResult.new(true, "", matched)
+  def self.ok(matched:, remaining:)
+    ParserResult.new(true, remaining, matched)
   end
 
   def self.fail(remaining)
     ParserResult.new(false, remaining, "")
-  end
-
-  def self.from_result(success:, consumed:, input:, matched:)
-    remaining = success ? input[consumed..-1] : input
-    ParserResult.new(success, remaining, matched)
   end
 
   def ==(other)

@@ -9,15 +9,6 @@ def assert_parses(parser, with:, remaining:)
 end
 
 describe Parser do
-  it "can make rules by hand" do
-    parser = Parser.build do
-      rule(:foo) { lambda { |input| input == "foo" ? ParserResult.ok("foo") : ParserResult.fail(input) } }
-      start(:foo)
-    end
-
-    assert_parses parser, with: "foo", remaining: ""
-  end
-
   it "must parse one" do
     parser = Parser.build do
       rule(:one) { one "a" }
@@ -27,7 +18,23 @@ describe Parser do
     assert_parses parser, with: "abc", remaining: "bc"
   end
 
-  it "matches satisfy"
+  it "can make rules by hand" do
+    parser = Parser.build do
+      rule(:foo) { lambda { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "foo", remaining: ""
+  end
+
+  it "matching rules by hand is the same as satisfy" do
+    parser = Parser.build do
+      rule(:foo) { satisfy { |input| input == "foo" ? ParserResult.ok(matched: "foo", remaining: "") : ParserResult.fail(input) } }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "foo", remaining: ""
+  end
 
   it "matches anyOf"
 
@@ -92,5 +99,22 @@ describe Parser do
     end
 
     assert_equal ["w", "8"], parser.call("w8")
+
+    parser = Parser.build do
+      rule(:letter)         { many1 { anyLetter } }
+      rule(:letterOrNumber) { seq rule(:letter), anyNumber, lambda { |letter, number| [letter, number] } }
+      start(:letterOrNumber)
+    end
+
+    assert_equal ["w", "8"], parser.call("w8")
+  end
+
+  it "uses regex" do
+    parser = Parser.build do
+      rule(:foo) { regex /foo/ }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "foo", remaining: ""
   end
 end
