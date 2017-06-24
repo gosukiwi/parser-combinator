@@ -1,9 +1,9 @@
-require_relative "combinators"
+require_relative "base_parsers"
 require_relative "parser"
 
 class Grammar
   class << self
-    include Combinators
+    include BaseParsers
 
     def build(&block)
       raise "Must provide a block" unless block_given?

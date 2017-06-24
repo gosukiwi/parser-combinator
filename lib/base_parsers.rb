@@ -1,6 +1,6 @@
 require_relative "parser_result"
 
-module Combinators
+module BaseParsers
   def nothing
     Parser.new do |input|
       if input == "" || input.nil?
