@@ -1,3 +1,6 @@
+# Combinators allow us to "combine" parsers together.
+# For example: run this parser first, if it fails, run this other one
+#              run this parser first, and then run this other parser
 module Combinators
   # Logical OR.
   # Usage:
@@ -21,10 +24,13 @@ module Combinators
   def >>(other)
     Parser.new do |input|
       first = run(input)
+      matched = ""
       if first.ok?
+        matched = matched + first.matched
         second = other.run(first.remaining)
         if second.ok?
-          second
+          matched = matched + second.matched
+          ParserResult.ok(matched: matched, remaining: second.remaining)
         else
           ParserResult.fail(input)
         end

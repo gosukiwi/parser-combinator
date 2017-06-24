@@ -131,7 +131,7 @@ describe Grammar do
         start(:letterAndNumber)
       end
 
-      assert_parses parser, with: "foo123", remaining: ""
+      assert_parses parser, with: "foo123", remaining: "", matched: "foo123"
     end
 
     it "works with multiple branches" do
