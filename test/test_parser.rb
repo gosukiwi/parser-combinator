@@ -9,6 +9,15 @@ def assert_parses(parser, with:, remaining:)
 end
 
 describe Parser do
+  it "can make rules by hand" do
+    parser = Parser.build do
+      rule(:foo) { lambda { |input| input == "foo" ? ParserResult.ok("foo") : ParserResult.fail(input) } }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "foo", remaining: ""
+  end
+
   it "must parse one" do
     parser = Parser.build do
       rule(:one) { one "a" }

@@ -44,7 +44,7 @@ module Combinators
 
   def many0(&wrapper)
     lambda do |input|
-      return ParserResult.ok if input.nil? || input == ""
+      return ParserResult.ok("") if input.nil? || input == ""
       many1(&wrapper).call(input)
     end
   end

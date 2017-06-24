@@ -22,9 +22,9 @@ In a Ruby, using a DSL
     betweenQuotes = match first: name between: (one '"') and: (one '"')
 
     # `seq` matches many parsers, and passes the result to a lambda
-    assign = seq name equals name { |name _ value| Assign.new(lhs: name, rhs: value) }
+    assign = seq name, equals, name, lambda { |name, _ , value| Assign.new(lhs: name, rhs: value) }
 
-    assign "hello123" # => (True, <AssignNode>)
+    assign "hello123" # => #<ParserResult>
 
 ## Running tests
 

@@ -6,8 +6,8 @@ class ParserResult
     @matched   = matched
   end
 
-  def self.ok
-    ParserResult.new(true, "", "")
+  def self.ok(matched)
+    ParserResult.new(true, "", matched)
   end
 
   def self.fail(remaining)
