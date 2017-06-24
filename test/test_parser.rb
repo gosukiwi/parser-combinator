@@ -92,9 +92,9 @@ describe Grammar do
         start(:letterOrNumber)
       end
 
-      assert_parses parser, with: "n", remaining: ""
-      assert_parses parser, with: "6", remaining: ""
-      assert_parses parser, with: "",  remaining: ""
+      assert_parses parser, with: "n", remaining: "", matched: "n"
+      assert_parses parser, with: "6", remaining: "", matched: "6"
+      assert_parses parser, with: "",  remaining: "", matched: ""
     end
 
     it "works with multiple branches" do
@@ -105,9 +105,9 @@ describe Grammar do
         start(:letterOrNumber)
       end
 
-      assert_parses parser, with: "n", remaining: ""
-      assert_parses parser, with: "6", remaining: ""
-      assert_parses parser, with: "",  remaining: ""
+      assert_parses parser, with: "n", remaining: "", matched: "n"
+      assert_parses parser, with: "6", remaining: "", matched: "6"
+      assert_parses parser, with: "",  remaining: "", matched: ""
     end
 
     it "works with satisfy" do
@@ -142,7 +142,7 @@ describe Grammar do
         start(:foo)
       end
 
-      assert_parses       parser, with: "foo123asd", remaining: ""
+      assert_parses       parser, with: "foo123asd", remaining: "", matched: "foo123asd"
       assert_doesnt_parse parser, with: "foo123",    remaining: "foo123"
     end
 
