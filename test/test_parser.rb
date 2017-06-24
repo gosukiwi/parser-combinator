@@ -134,6 +134,18 @@ describe Grammar do
       assert_parses       parser, with: "foo123asd", remaining: ""
       assert_doesnt_parse parser, with: "foo123",    remaining: "foo123"
     end
+
+    it "works with rules and satisfies" do
+      parser = Grammar.build do
+        rule(:letter)          { many1 { anyLetter } }
+        rule(:letterAndNumber) { rule(:letter) >> many0 { anyNumber } }
+        start(:letterAndNumber)
+      end
+
+      assert_parses       parser, with: "foo123", remaining: ""
+      assert_parses       parser, with: "foo",    remaining: ""
+      assert_doesnt_parse parser, with: "123a",   remaining: "123a"
+    end
   end
 
   it "matches using seq" do

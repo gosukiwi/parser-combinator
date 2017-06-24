@@ -85,9 +85,9 @@ module Combinators
 
   # This is just an alias of lambda in the DSL. See specs for more on this.
   #
-  def satisfy(&predicate)
+  def satisfy(&wrapper)
     Parser.new do |input|
-      predicate.call(input)
+      wrapper.call(input)
     end
   end
 
