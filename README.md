@@ -27,6 +27,19 @@ It simple matches nothing:
     parser.run("").ok?    # => true
     parser.run("foo").ok? # => false
 
+## Binary Combinators
+### Logical OR: |
+
+    let(:foo) { rule(:bar) | rule(:baz) }
+
+### Logical AND: >>
+
+    let(:foo) { rule(:bar) >> rule(:baz) }
+
+## Unary Combinators
+TODO
+* and +
+
 # Development
 
     $ bundle install
@@ -38,3 +51,7 @@ some input and returns a `ParserResult`.
 ## Running tests
 
     $ ruby -Ilib:test test/test_parser.rb
+
+# TODO
+Decent syntax error reporting, eg: Which line, which column failed.
+Maybe remove {} for many0 and many1

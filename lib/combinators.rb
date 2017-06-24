@@ -39,4 +39,46 @@ module Combinators
       end
     end
   end
+
+  # Match this, other is optional
+  def >(other)
+    Parser.new do |input|
+      first = run(input)
+      matched = ""
+      if first.ok?
+        matched = first.matched
+        second  = other.run(first.remaining)
+        if second.ok?
+          matched = matched + second.matched
+          ParserResult.ok(matched: matched, remaining: second.remaining)
+        else
+          first
+        end
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
+
+  # Match other, this is optional
+  def <(other)
+    Parser.new do |input|
+      first     = run(input)
+      matched   = ""
+      remaining = input
+
+      if first.ok?
+        matched   = first.matched
+        remaining = first.remaining
+      end
+
+      second = other.run(remaining)
+      if second.ok?
+        matched = matched + second.matched
+        ParserResult.ok(matched: matched, remaining: second.remaining)
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
 end

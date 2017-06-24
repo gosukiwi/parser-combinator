@@ -15,7 +15,7 @@ class Grammar
     end
 
     def rule(name, &wrapper)
-      return @rules.fetch(name.to_sym) { raise "Invalid rule: #{name}"} if wrapper.nil?
+      return @rules.fetch(name.to_sym) { raise "Could not find rule: #{name}"} if wrapper.nil?
       @rules[name.to_sym] = Parser.new { |input| wrapper.call.run(input) }
     end
 

@@ -1,7 +1,7 @@
 require_relative "parser_result"
 
 module BaseParsers
-  def nothing
+  def eof
     Parser.new do |input|
       if input == "" || input.nil?
         ParserResult.ok(matched: "", remaining: input)
@@ -11,10 +11,32 @@ module BaseParsers
     end
   end
 
+  def empty
+    Parser.new do |input|
+      ParserResult.ok(matched: "", remaining: input)
+    end
+  end
+
+  def whitespace
+    Parser.new do |input|
+      test regex: /^[ \n\t]+/, with: input
+    end
+  end
+
   def one(char)
     Parser.new do |input|
       if input[0] == char
         ParserResult.ok(matched: char, remaining: input[1..-1])
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
+
+  def str(string)
+    Parser.new do |input|
+      if input.start_with?(string)
+        ParserResult.ok(matched: string, remaining: input[string.length..-1])
       else
         ParserResult.fail(input)
       end
@@ -41,7 +63,7 @@ module BaseParsers
 
       loop do
         result = parser.run(remaining)
-        break if remaining.nil? || !result.success
+        break if remaining.nil? || result.fail?
         matched   = matched + result.matched
         remaining = result.remaining
       end
@@ -52,7 +74,7 @@ module BaseParsers
 
   def many0(&wrapper)
     #Parser.new do |input|
-    #  nothing | many1(&wrapper)
+    #  eof | many1(&wrapper)
     #end
     Parser.new do |input|
       if input.nil? || input == ""
@@ -122,6 +144,63 @@ module BaseParsers
         else
           ParserResult.fail(input)
         end
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
+
+  def anyChar(chars)
+    Parser.new do |input|
+      first_char = input[0]
+      result     = ParserResult.fail(input)
+
+      chars.each do |char|
+        if first_char == char
+          result = ParserResult.ok(matched: char, remaining: input[1..-1])
+          break
+        end
+      end
+
+      result
+    end
+  end
+
+  def anyCharBut(chars)
+    Parser.new do |input|
+      first_char = input[0]
+      result     = ParserResult.ok(matched: first_char, remaining: input[1..-1])
+
+      chars.each do |char|
+        if first_char == char
+          result = ParserResult.fail(input)
+          break
+        end
+      end
+
+      result
+    end
+  end
+
+  def exactly(n, &wrapper)
+    parser = wrapper.call
+    Parser.new do |input|
+      matched   = ""
+      remaining = input
+      success   = true
+
+      n.to_i.times do
+        result = parser.run(remaining)
+        if result.fail?
+          success = false
+          break
+        end
+        matched   = matched + result.matched
+        remaining = result.remaining
+      end
+
+      if success
+        ParserResult.ok(matched: matched, remaining: remaining)
       else
         ParserResult.fail(input)
       end

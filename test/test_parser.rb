@@ -4,14 +4,24 @@ require_relative "spec_helpers"
 
 describe Grammar do
   describe "Built-in combinators" do
-    it "matches nothing" do
+    it "matches eof" do
       parser = Grammar.build do
-        rule(:foo) { nothing }
+        rule(:foo) { eof }
         start(:foo)
       end
 
-      assert_parses       parser, with: "",    remaining: ""
-      assert_doesnt_parse parser, with: "asd", remaining: "asd"
+      assert_parses parser, with: "",    remaining: ""
+      assert_parses parser, with: "asd", remaining: "asd", should_fail: true
+    end
+
+    it "matches empty" do
+      parser = Grammar.build do
+        rule(:foo) { empty }
+        start(:foo)
+      end
+
+      assert_parses parser, with: "asd", remaining: "asd"
+      assert_parses parser, with: "",    remaining: ""
     end
 
     it "must parse one" do
@@ -21,6 +31,17 @@ describe Grammar do
       end
 
       assert_parses parser, with: "abc", remaining: "bc"
+    end
+
+    it "must parse str" do
+      parser = Grammar.build do
+        rule(:foo) { str "foo" }
+        start(:foo)
+      end
+
+      assert_parses parser, with: "foo",    remaining: ""
+      assert_parses parser, with: "foobar", remaining: "bar"
+      assert_parses parser, with: "fobar",  remaining: "fobar", should_fail: true
     end
   end
 
@@ -41,8 +62,6 @@ describe Grammar do
 
     assert_parses parser, with: "foo", remaining: ""
   end
-
-  it "matches anyOf"
 
   it "matches anyLetter" do
     parser = Grammar.build do
@@ -101,7 +120,7 @@ describe Grammar do
       parser = Grammar.build do
         rule(:letter)         { many1 { anyLetter } }
         rule(:number)         { many1 { anyNumber } }
-        rule(:letterOrNumber) { rule(:letter) | rule(:number) | nothing }
+        rule(:letterOrNumber) { rule(:letter) | rule(:number) | eof }
         start(:letterOrNumber)
       end
 
@@ -142,8 +161,8 @@ describe Grammar do
         start(:foo)
       end
 
-      assert_parses       parser, with: "foo123asd", remaining: "", matched: "foo123asd"
-      assert_doesnt_parse parser, with: "foo123",    remaining: "foo123"
+      assert_parses parser, with: "foo123asd", remaining: "", matched: "foo123asd"
+      assert_parses parser, with: "foo123",    remaining: "foo123", should_fail: true
     end
 
     it "works with rules and satisfies" do
@@ -153,9 +172,9 @@ describe Grammar do
         start(:letterAndNumber)
       end
 
-      assert_parses       parser, with: "foo123", remaining: ""
-      assert_parses       parser, with: "foo",    remaining: ""
-      assert_doesnt_parse parser, with: "123a",   remaining: "123a"
+      assert_parses parser, with: "foo123", remaining: ""
+      assert_parses parser, with: "foo",    remaining: ""
+      assert_parses parser, with: "123a",   remaining: "123a", should_fail: true
     end
   end
 
@@ -194,5 +213,40 @@ describe Grammar do
     end
 
     assert_parses parser, with: '"hi"', remaining: ''
+  end
+
+  it "matches anyChar" do
+    parser = Grammar.build do
+      rule(:foo) { anyChar ['a', 'b'] }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "asd", remaining: "sd"
+    assert_parses parser, with: "bsd", remaining: "sd"
+    assert_parses parser, with: "c",   remaining: "c", should_fail: true
+  end
+
+  it "matches anyCharBut" do
+    parser = Grammar.build do
+      rule(:foo) { anyCharBut ['a', 'b'] }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "c", remaining: ""
+    assert_parses parser, with: "d", remaining: ""
+    assert_parses parser, with: "a", remaining: "a", should_fail: true
+    assert_parses parser, with: "b", remaining: "b", should_fail: true
+  end
+
+  it "matches exactly n times" do
+    parser = Grammar.build do
+      rule(:foo) { exactly(4) { anyLetter } }
+      start(:foo)
+    end
+
+    assert_parses parser, with: "abcde", remaining: "e"
+    assert_parses parser, with: "abcd",  remaining: ""
+    assert_parses parser, with: "a",     remaining: "a",  should_fail: true
+    assert_parses parser, with: "abc",   remaining: "abc", should_fail: true
   end
 end
