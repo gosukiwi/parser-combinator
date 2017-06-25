@@ -44,14 +44,17 @@ describe Grammar do
       rule(:number)               { (one "-") < (rule :positive_number) }
 
       # array
-      rule(:array_body) { ((rule :value) >> (rule :comma) >> (rule :array_body)) | (rule :value) | empty }
+      rule(:array_body) { (rule :value_group) | empty }
       rule(:array)      { match (rule :array_body), between: [(one "["), (one "]")] }
 
       # other stuff
+      rule(:value_group) { ((rule :value) >> (rule :comma) >> (rule :value_group)) | (rule :value)  }
       rule(:value)       { (rule :string) | (rule :number) | (rule :object) | (rule :array) | (rule :true) | (rule :false) | (rule :null) }
+
       rule(:pair)        { (rule :string) >> (rule :semicolon) >> (rule :value) }
-      rule(:pair_group)  { ((rule :pair) >> (rule :comma) >> (rule :pair_group)) | (rule :pair) | empty }
-      rule(:object)      { match (rule :pair_group), between: [(rule :bopen), (rule :bclose)] }
+      rule(:pair_group)  { ((rule :pair) >> (rule :comma) >> (rule :pair_group)) | (rule :pair) }
+      rule(:pair_body)   { (rule :pair_group) | empty }
+      rule(:object)      { match (rule :pair_body), between: [(rule :bopen), (rule :bclose)] }
 
       # The last rule is always the starting rule, but let's make things clear
       start(:object)
@@ -63,12 +66,12 @@ describe Grammar do
     test_parser parser, with: '{ "foo": 1.5 }'
     test_parser parser, with: '{ "foo": 1.5e-5 }'
     test_parser parser, with: '{ "foo": false,"b\\nar" : true }'
-    test_parser parser, with: '{ "foo":{ "bar": "baz\\u1235" } }'
-    test_parser parser, with: '{ "foo":{ "bar": "baz\\u125" } }', should_fail: true
+    test_parser parser, with: '{ "foo": { "bar": "baz\\u1235" } }'
+    test_parser parser, with: '{ "foo": { "bar": "baz\\u125" } }', should_fail: true
     test_parser parser, with: '{ "foo": [] }'
     test_parser parser, with: '{ "foo": [1] }'
     test_parser parser, with: '{ "foo": [1, 2, 3, 4] }'
-    test_parser parser, with: '{ "foo": [1, 2, 3, 4,] }' # TODO: fix this
-    test_parser parser, with: '{ "foo": 123, }'          # TODO: and this
+    test_parser parser, with: '{ "foo": [1, 2, 3, 4,] }',          should_fail: true
+    test_parser parser, with: '{ "foo": 123, }',                   should_fail: true
   end
 end
