@@ -165,16 +165,7 @@ The documentation is a WIP, and reflects the actual API as much as possible, the
 real and always updated API lives in the tests, so it's highly recommended
 to check them out. Tests can be found in `test/test_*.rb`.
 
-## Nothing
-It simple matches nothing:
-
-    parser = Grammar.build do
-      let(:nothing) { nothing }
-      start(:nothing)
-    end
-
-    parser.run("").ok?    # => true
-    parser.run("foo").ok? # => false
+## Base Parsers
 
 ## Binary Combinators
 ### Logical OR: |
