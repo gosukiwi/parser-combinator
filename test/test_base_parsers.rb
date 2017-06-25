@@ -31,7 +31,7 @@ describe Grammar do
       end
 
       assert_parses parser, with: "  asd", remaining: "asd"
-      assert_parses parser, with: "",    remaining: ""
+      assert_parses parser, with: "",      remaining: ""
     end
 
     it "must parse one" do
@@ -79,7 +79,7 @@ describe Grammar do
       start(:any)
     end
 
-    assert_parses parser, with: "abzx", remaining: "bzx"
+    assert_parses parser, with: "abzx",  remaining: "bzx"
     assert_parses parser, with: "Znasd", remaining: "nasd"
   end
 
@@ -90,7 +90,7 @@ describe Grammar do
     end
 
     assert_parses parser, with: "12asd3", remaining: "2asd3"
-    assert_parses parser, with: "32asd", remaining: "2asd"
+    assert_parses parser, with: "32asd",  remaining: "2asd"
   end
 
   it "matches many1" do
