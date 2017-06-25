@@ -91,7 +91,8 @@ module BaseParsers
     Parser.new do |input|
       remaining = input
       matched   = ""
-      new_args  = parsers.map do |parser|
+
+      new_args = parsers.map do |parser|
         result = parser.run(remaining)
         return ParserResult.fail(input) unless result.ok?
         remaining = result.remaining
