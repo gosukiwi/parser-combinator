@@ -6,7 +6,62 @@ At it's core, it's a parser combinator library, but you don't need to worry
 about that. You build more complex expression based on simple ones, and match
 any formal language you want.
 
-Here's an example:
+Here's what the grammars look like, this demo will parse [JSON](http://www.json.org/):
+
+    parser = Grammar.build do
+      rule(:bopen)       { (one "{") > whitespace }
+      rule(:bclose)      { whitespace < (one "}") }
+      rule(:semicolon)   { whitespace < (one ":") > whitespace }
+      rule(:comma)       { whitespace < (one ",") > whitespace }
+      rule(:quote)       { one '"' }
+      rule(:true)        { str "true" }
+      rule(:false)       { str "false" }
+      rule(:null)        { str "null" }
+
+      # string
+      rule(:hexdigit)           { anyChar %w[0 1 2 3 4 5 6 7 8 9 a b c d e f] }
+      rule(:hexdigits)          { (one "u") >> (exactly(4) { (rule :hexdigit) }) }
+      rule(:any_escaped_char)   { (one "\\") >> ((anyChar %w[" \\ / b f n r t]) | (rule :hexdigits)) }
+      rule(:any_unescaped_char) { (anyCharBut %w[" \\]) }
+      rule(:string_char)        { (rule :any_unescaped_char) | (rule :any_escaped_char) }
+      rule(:string)             { match (many0 { (rule :string_char) }), between: [(rule :quote), (rule :quote)] }
+
+      # number
+      rule(:decimal)              { (one '.') >> many1 { anyNumber } }
+      rule(:cientific)            { (anyChar %w[e E]) >> (anyChar %w[+ -]) >> many1 { anyNumber } }
+      rule(:decimal_or_cientific) { (rule :decimal) > (rule :cientific) }
+      rule(:positive_number)      { ((one "0") | many1 { anyNumber }) > (rule :decimal_or_cientific) }
+      rule(:number)               { (one "-") < (rule :positive_number) }
+
+      # array
+      rule(:array_body) { (rule :value_group) | empty }
+      rule(:array)      { match (rule :array_body), between: [(one "["), (one "]")] }
+
+      rule(:value_group) { ((rule :value) >> (rule :comma) >> (rule :value_group)) | (rule :value)  }
+      rule(:value)       { (rule :string) | (rule :number) | (rule :object) | (rule :array) | (rule :true) | (rule :false) | (rule :null) }
+      rule(:pair)        { (rule :string) >> (rule :semicolon) >> (rule :value) }
+      rule(:pair_group)  { ((rule :pair) >> (rule :comma) >> (rule :pair_group)) | (rule :pair) }
+      rule(:pair_body)   { (rule :pair_group) | empty }
+      rule(:object)      { match (rule :pair_body), between: [(rule :bopen), (rule :bclose)] }
+
+      # The last rule is always the starting rule, but let's make things clear
+      start(:object)
+    end
+
+    parser.run('{ "foo": "bar" }').ok? # => true
+    parser.run('{ "foo": }').ok?       # => false
+    parser.run('not even json').ok?    # => false
+
+It might look a bit cryptic at first but the power combinators give us is
+well worth the initial learning curve! Don't believe me? Let me show you.
+
+Let's say we want to match an assign statement:
+
+    foo = 1
+
+We can start right away!
+
+    foo
 
 # Documentation
 The library provides several base `parsers` for you. Those are used to constuct

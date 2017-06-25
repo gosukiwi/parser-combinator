@@ -67,10 +67,11 @@ describe Grammar do
     test_parser parser, with: '{ "foo": 1.5e-5 }'
     test_parser parser, with: '{ "foo": false,"b\\nar" : true }'
     test_parser parser, with: '{ "foo": { "bar": "baz\\u1235" } }'
-    test_parser parser, with: '{ "foo": { "bar": "baz\\u125" } }', should_fail: true
     test_parser parser, with: '{ "foo": [] }'
     test_parser parser, with: '{ "foo": [1] }'
     test_parser parser, with: '{ "foo": [1, 2, 3, 4] }'
+    # Some error cases
+    test_parser parser, with: '{ "foo": { "bar": "baz\\u125" } }', should_fail: true
     test_parser parser, with: '{ "foo": [1, 2, 3, 4,] }',          should_fail: true
     test_parser parser, with: '{ "foo": 123, }',                   should_fail: true
   end
