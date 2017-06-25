@@ -6,14 +6,23 @@ require_relative "spec_helpers"
 describe Grammar do
   it "parses JSON" do
     parser = Grammar.build do
+      # =======================================================================
       # Here `>` means right hand size is optional. `<` means left size is
       # optional.
       # You can think of `>` and `<` as an open duck mouth, the duck eats the
       # mandatory part, ignores the other. #PrimarySchoolHacks
+      #
+      # `>>` means "and then" and `|` means "or else try this".
+      #
+      # Something similar happens with `>=` and `<=`, see `README.md` for more
+      # info on binary combinators.
+      # =======================================================================
+
+      # Simple stuff
       rule(:bopen)       { (one "{") > whitespace }
       rule(:bclose)      { whitespace < (one "}") }
       rule(:semicolon)   { whitespace < (one ":") > whitespace }
-      rule(:comma)       { one "," }
+      rule(:comma)       { whitespace < (one ",") > whitespace }
       rule(:quote)       { one '"' }
       rule(:true)        { str "true" }
       rule(:false)       { str "false" }
@@ -28,13 +37,18 @@ describe Grammar do
       rule(:string)             { match (many0 { (rule :string_char) }), between: [(rule :quote), (rule :quote)] }
 
       # number
-      rule(:decimal)     { (one '.') >> many1 { anyNumber } }
-      rule(:cientific)   { (anyChar %w[e E]) >> (anyChar %w[+ -]) >> many1 { anyNumber } }
+      rule(:decimal)              { (one '.') >> many1 { anyNumber } }
+      rule(:cientific)            { (anyChar %w[e E]) >> (anyChar %w[+ -]) >> many1 { anyNumber } }
       rule(:decimal_or_cientific) { (rule :decimal) > (rule :cientific) }
-      rule(:positive_number) { ((one "0") | many1 { anyNumber }) > (rule :decimal_or_cientific) }
-      rule(:number)          { (one "-") < (rule :positive_number) }
+      rule(:positive_number)      { ((one "0") | many1 { anyNumber }) > (rule :decimal_or_cientific) }
+      rule(:number)               { (one "-") < (rule :positive_number) }
 
-      rule(:value)       { (rule :string) | (rule :number) | (rule :object) | (rule :true) | (rule :false) | (rule :null) }
+      # array
+      rule(:array_body) { ((rule :value) >> (rule :comma) >> (rule :array_body)) | (rule :value) | empty }
+      rule(:array)      { match (rule :array_body), between: [(one "["), (one "]")] }
+
+      # other stuff
+      rule(:value)       { (rule :string) | (rule :number) | (rule :object) | (rule :array) | (rule :true) | (rule :false) | (rule :null) }
       rule(:pair)        { (rule :string) >> (rule :semicolon) >> (rule :value) }
       rule(:pair_group)  { ((rule :pair) >> (rule :comma) >> (rule :pair_group)) | (rule :pair) | empty }
       rule(:object)      { match (rule :pair_group), between: [(rule :bopen), (rule :bclose)] }
@@ -51,5 +65,10 @@ describe Grammar do
     test_parser parser, with: '{ "foo": false,"b\\nar" : true }'
     test_parser parser, with: '{ "foo":{ "bar": "baz\\u1235" } }'
     test_parser parser, with: '{ "foo":{ "bar": "baz\\u125" } }', should_fail: true
+    test_parser parser, with: '{ "foo": [] }'
+    test_parser parser, with: '{ "foo": [1] }'
+    test_parser parser, with: '{ "foo": [1, 2, 3, 4] }'
+    test_parser parser, with: '{ "foo": [1, 2, 3, 4,] }' # TODO: fix this
+    test_parser parser, with: '{ "foo": 123, }'          # TODO: and this
   end
 end
