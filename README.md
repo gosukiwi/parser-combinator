@@ -68,12 +68,14 @@ foo = 1
 We can start right away!
 
 ```ruby
+# this uses minitest, see `test/test_turorial.rb`
 parser = Grammar.build do
   rule(:assign) { (str "foo = 1") }
 
   start(:assign)
 end
-parser.run("foo = 1").ok? # => true
+
+parser.run("foo = 1").ok?.must_equal true
 ```
 
 That looks like RSpec doesn't it? Well it's what most Ruby DSLs look like, and
@@ -89,14 +91,69 @@ parser = Grammar.build do
 
   start(:assign)
 end
-parser.run("foo = 1").ok? # => true
-parser.run("foo = 3").ok? # => true
-parser.run("foo = 9").ok? # => true
+
+parser.run("foo = 1").ok?.must_equal true
+parser.run("foo = 3").ok?.must_equal true
+parser.run("foo = 9").ok?.must_equal true
 ```
 
 It works! It really is that easy. But what is that `>>` thing over there? It
 just means `match this AND THEN match this other thing`. If any of them fails,
-the rule is considered invalid. 
+the rule fails.
+
+Okay now let's say we want real identifiers, not just `foo`:
+
+```ruby
+parser = Grammar.build do
+  rule(:assign) { many1 { anyLetter } >> (str " = ") >> anyNumber }
+
+  start(:assign)
+end
+
+parser.run("foo = 1").ok?.must_equal true
+parser.run("bar = 3").ok?.must_equal true
+parser.run("baz = 9").ok?.must_equal true
+```
+
+Oh! Almost too easy right? `many1` is a parser provided for you, it takes a
+block. The block must return a parser which will be run on the input **one or
+more times**. It's the same as saying `anyLetter+`.
+
+> **NOTE** As you might have guessed, you are also provided of a parser called
+> `many0`. `many0 { anyLetter }` is the equivalent of `anyLetter*`.
+
+`anyLetter` is also provided by the library and it matches `[a-zA-Z]+`.
+
+Now, let's tidy up the grammar a bit:
+
+```ruby
+parser = Grammar.build do
+  rule(:equals) { whitespace < (one "=") > whitespace }
+  rule(:assign) { many1 { anyLetter } >> (rule :equals) >> anyNumber }
+
+  start(:assign)
+end
+
+parser.run("foo = 1").ok?.must_equal true
+parser.run("bar =3").ok?.must_equal  true
+parser.run("baz= 9").ok?.must_equal  true
+```
+
+Nice! What is `>` and `<` you ask? Well, they are similar to `>>`, and they are
+called _combinators_. This is a parser combinator afterall right? That whole
+concept is borrowed from functional programming, you don't really need it to use
+the library at all though, so don't worry.
+
+`>` means `take whatever is on the left, and the right is optional`. As you might
+have guessed, `<` means the exact opposite, `take whatever is on the right,
+and the left is optional.`. We can combine those two in a hacky way to write
+
+```ruby
+whitespace < (one "=") > whitespace
+```
+
+You think think about it as `surround (one "=") with optional stuff`.
+And that's it! Not bad for a 5 minutes intro huh?
 
 # Documentation
 The library provides several base `parsers` for you. Those are used to constuct
