@@ -158,14 +158,13 @@ You can think about it as _"surround (one "=") with optional stuff"_.
 And that's it! Not bad for a 5 minutes intro huh?
 
 # Documentation
-The library provides several base `parsers` for you. Those are used to constuct
-bigger, more complex parsers.
-
 The documentation is a WIP, and reflects the actual API as much as possible, the
-real and always updated API lives in the tests, so it's highly recommended
-to check them out. Tests can be found in `test/test_*.rb`.
+true API lives in the tests, so it's highly recommended to check them out. Tests
+can be found in `test/test_*.rb`.
 
 ## Base Parsers
+The library provides several base `parsers` for you. Those are used to constuct
+bigger, more complex parsers.
 
 ## Binary Combinators
 ### Logical OR: |
