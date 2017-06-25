@@ -24,6 +24,16 @@ describe Grammar do
       assert_parses parser, with: "",    remaining: ""
     end
 
+    it "matches whitespace" do
+      parser = Grammar.build do
+        rule(:foo) { whitespace }
+        start(:foo)
+      end
+
+      assert_parses parser, with: "  asd", remaining: "asd"
+      assert_parses parser, with: "",    remaining: ""
+    end
+
     it "must parse one" do
       parser = Grammar.build do
         rule(:one) { one "a" }

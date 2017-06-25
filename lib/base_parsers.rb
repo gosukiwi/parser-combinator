@@ -18,7 +18,7 @@ module BaseParsers
   end
 
   def whitespace
-    anyChar([' '] + %w[\b \f \n \r \t])
+    many0 { anyChar([' '] + %w[\b \f \n \r \t]) }
   end
 
   def one(char)
