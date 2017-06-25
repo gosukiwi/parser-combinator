@@ -117,15 +117,6 @@ module BaseParsers
     end
   end
 
-  # Match something in between some other parsers.
-  # Usage:
-  #   Grammar.build do
-  #     rule(:quote) { one '"' }
-  #     rule(:foo)   { match (many1 { anyLetter }), between: [rule(:quote), rule(:quote)] }
-  #   end
-  #
-  # The grammar above will match 1+ letters between quotes, eg: "foo", "f", "HelloWorld".
-  #
   def match(rule, between:)
     first, last = between
     Parser.new do |input|
