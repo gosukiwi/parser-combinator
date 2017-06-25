@@ -98,7 +98,7 @@ parser.run("foo = 9").ok?.must_equal true
 ```
 
 It works! It really is that easy. But what is that `>>` thing over there? It
-just means `match this AND THEN match this other thing`. If any of them fails,
+just means _"match this AND THEN match this other thing"_. If any of them fails,
 the rule fails.
 
 Okay now let's say we want real identifiers, not just `foo`:
@@ -119,10 +119,11 @@ Oh! Almost too easy right? `many1` is a parser provided for you, it takes a
 block. The block must return a parser which will be run on the input **one or
 more times**. It's the same as saying `anyLetter+`.
 
+We also use something called `anyLetter`. It is a parser provided by the library
+and it matches `[a-zA-Z]+`.
+
 > **NOTE** As you might have guessed, you are also provided of a parser called
 > `many0`. `many0 { anyLetter }` is the equivalent of `anyLetter*`.
-
-`anyLetter` is also provided by the library and it matches `[a-zA-Z]+`.
 
 Now, let's tidy up the grammar a bit:
 
@@ -144,15 +145,15 @@ called _combinators_. This is a parser combinator afterall right? That whole
 concept is borrowed from functional programming, you don't really need it to use
 the library at all though, so don't worry.
 
-`>` means `take whatever is on the left, and the right is optional`. As you might
-have guessed, `<` means the exact opposite, `take whatever is on the right,
-and the left is optional.`. We can combine those two in a hacky way to write
+The combinator `>` means _"take whatever is on the left, and the right is optional"_. As you might
+have guessed, `<` means the exact opposite, _"take whatever is on the right,
+and the left is optional"_. We can combine those two in a hacky way to write
 
 ```ruby
 whitespace < (one "=") > whitespace
 ```
 
-You think think about it as `surround (one "=") with optional stuff`.
+You think think about it as _"surround (one "=") with optional stuff"_.
 And that's it! Not bad for a 5 minutes intro huh?
 
 # Documentation
