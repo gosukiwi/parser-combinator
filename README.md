@@ -153,7 +153,8 @@ and the left is optional"_. We can combine those two in a hacky way to write
 whitespace < (one "=") > whitespace
 ```
 
-You think think about it as _"surround (one "=") with optional stuff"_.
+You can think about it as _"surround (one "=") with optional stuff"_.
+
 And that's it! Not bad for a 5 minutes intro huh?
 
 # Documentation
