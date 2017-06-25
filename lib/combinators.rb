@@ -81,4 +81,32 @@ module Combinators
       end
     end
   end
+
+  # Match this, other is ignored but consumed
+  def >=(other)
+    Parser.new do |input|
+      first = run(input)
+      if first.ok?
+        second  = other.run(first.remaining)
+        if second.ok?
+          ParserResult.ok(matched: first.matched, remaining: second.remaining)
+        else
+          first
+        end
+      else
+        ParserResult.fail(input)
+      end
+    end
+  end
+
+  # Match other, this is ignored but consumed
+  def <=(other)
+    Parser.new do |input|
+      first     = run(input)
+      remaining = input
+      remaining = first.remaining if first.ok?
+      second    = other.run(remaining)
+      second.ok? ? second : ParserResult.fail(input)
+    end
+  end
 end

@@ -54,4 +54,3 @@ some input and returns a `ParserResult`.
 
 # TODO
 Decent syntax error reporting, eg: Which line, which column failed.
-Maybe remove {} for many0 and many1
