@@ -8,60 +8,95 @@ any formal language you want.
 
 Here's what the grammars look like, this demo will parse [JSON](http://www.json.org/):
 
-    parser = Grammar.build do
-      rule(:bopen)       { (one "{") > whitespace }
-      rule(:bclose)      { whitespace < (one "}") }
-      rule(:semicolon)   { whitespace < (one ":") > whitespace }
-      rule(:comma)       { whitespace < (one ",") > whitespace }
-      rule(:quote)       { one '"' }
-      rule(:true)        { str "true" }
-      rule(:false)       { str "false" }
-      rule(:null)        { str "null" }
+```ruby
+parser = Grammar.build do
+  rule(:bopen)       { (one "{") > whitespace }
+  rule(:bclose)      { whitespace < (one "}") }
+  rule(:semicolon)   { whitespace < (one ":") > whitespace }
+  rule(:comma)       { whitespace < (one ",") > whitespace }
+  rule(:quote)       { one '"' }
+  rule(:true)        { str "true" }
+  rule(:false)       { str "false" }
+  rule(:null)        { str "null" }
 
-      # string
-      rule(:hexdigit)           { anyChar %w[0 1 2 3 4 5 6 7 8 9 a b c d e f] }
-      rule(:hexdigits)          { (one "u") >> (exactly(4) { (rule :hexdigit) }) }
-      rule(:any_escaped_char)   { (one "\\") >> ((anyChar %w[" \\ / b f n r t]) | (rule :hexdigits)) }
-      rule(:any_unescaped_char) { (anyCharBut %w[" \\]) }
-      rule(:string_char)        { (rule :any_unescaped_char) | (rule :any_escaped_char) }
-      rule(:string)             { match (many0 { (rule :string_char) }), between: [(rule :quote), (rule :quote)] }
+  # string
+  rule(:hexdigit)           { anyChar %w[0 1 2 3 4 5 6 7 8 9 a b c d e f] }
+  rule(:hexdigits)          { (one "u") >> (exactly(4) { (rule :hexdigit) }) }
+  rule(:any_escaped_char)   { (one "\\") >> ((anyChar %w[" \\ / b f n r t]) | (rule :hexdigits)) }
+  rule(:any_unescaped_char) { (anyCharBut %w[" \\]) }
+  rule(:string_char)        { (rule :any_unescaped_char) | (rule :any_escaped_char) }
+  rule(:string)             { match (many0 { (rule :string_char) }), between: [(rule :quote), (rule :quote)] }
 
-      # number
-      rule(:decimal)              { (one '.') >> many1 { anyNumber } }
-      rule(:cientific)            { (anyChar %w[e E]) >> (anyChar %w[+ -]) >> many1 { anyNumber } }
-      rule(:decimal_or_cientific) { (rule :decimal) > (rule :cientific) }
-      rule(:positive_number)      { ((one "0") | many1 { anyNumber }) > (rule :decimal_or_cientific) }
-      rule(:number)               { (one "-") < (rule :positive_number) }
+  # number
+  rule(:decimal)              { (one '.') >> many1 { anyNumber } }
+  rule(:cientific)            { (anyChar %w[e E]) >> (anyChar %w[+ -]) >> many1 { anyNumber } }
+  rule(:decimal_or_cientific) { (rule :decimal) > (rule :cientific) }
+  rule(:positive_number)      { ((one "0") | many1 { anyNumber }) > (rule :decimal_or_cientific) }
+  rule(:number)               { (one "-") < (rule :positive_number) }
 
-      # array
-      rule(:array_body) { (rule :value_group) | empty }
-      rule(:array)      { match (rule :array_body), between: [(one "["), (one "]")] }
+  # array
+  rule(:array_body) { (rule :value_group) | empty }
+  rule(:array)      { match (rule :array_body), between: [(one "["), (one "]")] }
 
-      rule(:value_group) { ((rule :value) >> (rule :comma) >> (rule :value_group)) | (rule :value)  }
-      rule(:value)       { (rule :string) | (rule :number) | (rule :object) | (rule :array) | (rule :true) | (rule :false) | (rule :null) }
-      rule(:pair)        { (rule :string) >> (rule :semicolon) >> (rule :value) }
-      rule(:pair_group)  { ((rule :pair) >> (rule :comma) >> (rule :pair_group)) | (rule :pair) }
-      rule(:pair_body)   { (rule :pair_group) | empty }
-      rule(:object)      { match (rule :pair_body), between: [(rule :bopen), (rule :bclose)] }
+  rule(:value_group) { ((rule :value) >> (rule :comma) >> (rule :value_group)) | (rule :value)  }
+  rule(:value)       { (rule :string) | (rule :number) | (rule :object) | (rule :array) | (rule :true) | (rule :false) | (rule :null) }
+  rule(:pair)        { (rule :string) >> (rule :semicolon) >> (rule :value) }
+  rule(:pair_group)  { ((rule :pair) >> (rule :comma) >> (rule :pair_group)) | (rule :pair) }
+  rule(:pair_body)   { (rule :pair_group) | empty }
+  rule(:object)      { match (rule :pair_body), between: [(rule :bopen), (rule :bclose)] }
 
-      # The last rule is always the starting rule, but let's make things clear
-      start(:object)
-    end
+  # The last rule is always the starting rule, but let's make things clear
+  start(:object)
+end
 
-    parser.run('{ "foo": "bar" }').ok? # => true
-    parser.run('{ "foo": }').ok?       # => false
-    parser.run('not even json').ok?    # => false
+parser.run('{ "foo": "bar" }').ok? # => true
+parser.run('{ "foo": }').ok?       # => false
+parser.run('not even json').ok?    # => false
+```
 
 It might look a bit cryptic at first but the power combinators give us is
 well worth the initial learning curve! Don't believe me? Let me show you.
 
+## Introduction
+Okay let's do this! I'll show you how to use this library and why it's awesome.
 Let's say we want to match an assign statement:
 
-    foo = 1
+```ruby
+foo = 1
+```
 
 We can start right away!
 
-    foo
+```ruby
+parser = Grammar.build do
+  rule(:assign) { (str "foo = 1") }
+
+  start(:assign)
+end
+parser.run("foo = 1").ok? # => true
+```
+
+That looks like RSpec doesn't it? Well it's what most Ruby DSLs look like, and
+if you've ever worked with any, you'll feel right at home. If not, don't worry
+a DSL is a tiny language afterall!
+
+That was almost cheating wasn't it. Let's say we want to be able to match
+any number now:
+
+```ruby
+parser = Grammar.build do
+  rule(:assign) { (str "foo = ") >> anyNumber }
+
+  start(:assign)
+end
+parser.run("foo = 1").ok? # => true
+parser.run("foo = 3").ok? # => true
+parser.run("foo = 9").ok? # => true
+```
+
+It works! It really is that easy. But what is that `>>` thing over there? It
+just means `match this AND THEN match this other thing`. If any of them fails,
+the rule is considered invalid. 
 
 # Documentation
 The library provides several base `parsers` for you. Those are used to constuct
