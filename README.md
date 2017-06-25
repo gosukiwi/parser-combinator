@@ -78,12 +78,12 @@ end
 parser.run("foo = 1").ok?.must_equal true
 ```
 
+That was almost cheating wasn't it. Let's say we want to be able to match
+any number now:
+
 > **NOTE** That looks like RSpec doesn't it? Well it's what most Ruby DSLs look
 > like, and if you've ever worked with any, you'll feel right at home. If not,
 > don't worry a DSL is a tiny language afterall!
-
-That was almost cheating wasn't it. Let's say we want to be able to match
-any number now:
 
 ```ruby
 parser = Grammar.build do
