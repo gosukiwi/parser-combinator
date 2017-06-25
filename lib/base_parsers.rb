@@ -73,9 +73,6 @@ module BaseParsers
   end
 
   def many0(&wrapper)
-    #Parser.new do |input|
-    #  eof | many1(&wrapper)
-    #end
     Parser.new do |input|
       if input.nil? || input == ""
         ParserResult.ok(matched: "", remaining: input)
