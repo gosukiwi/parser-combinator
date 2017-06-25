@@ -18,9 +18,7 @@ module BaseParsers
   end
 
   def whitespace
-    Parser.new do |input|
-      test regex: /^[ \n\t]+/, with: input
-    end
+    anyChar([' '] + %w[\b \f \n \r \t])
   end
 
   def one(char)
@@ -44,15 +42,11 @@ module BaseParsers
   end
 
   def anyLetter
-    Parser.new do |input|
-      test regex: /^[a-zA-Z]/, with: input
-    end
+    anyChar(('a'..'z').to_a + ('A'..'Z').to_a)
   end
 
   def anyNumber
-    Parser.new do |input|
-      test regex: /^[0-9]/, with: input
-    end
+    anyChar ('0'..'9').to_a
   end
 
   def many1(&wrapper)
